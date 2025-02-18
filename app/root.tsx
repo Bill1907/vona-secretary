@@ -7,9 +7,9 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 
-import "./tailwind.css";
-
+// CSS 파일 경로를 직접 지정
 export const links: LinksFunction = () => [
+  { rel: "stylesheet", href: "/app/tailwind.css" },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
     rel: "preconnect",

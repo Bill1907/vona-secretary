@@ -25,4 +25,10 @@ export default defineConfig({
     }),
     tsconfigPaths(),
   ],
+  build: {
+    cssMinify: true,
+  },
+  css: {
+    postcss: true,
+  },
 });
