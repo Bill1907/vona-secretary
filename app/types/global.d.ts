@@ -17,6 +17,10 @@ declare global {
   interface Window {
     SpeechRecognition: new () => SpeechRecognition;
     webkitSpeechRecognition: new () => SpeechRecognition;
+    ENV?: {
+      WS_SERVER_URL?: string;
+      [key: string]: string | undefined;
+    };
   }
 }
 

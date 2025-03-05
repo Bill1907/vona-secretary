@@ -1,4 +1,4 @@
-import type { LinksFunction } from "@remix-run/cloudflare";
+import type { LinksFunction, MetaFunction } from "@remix-run/cloudflare";
 import {
   Links,
   Meta,
@@ -9,6 +9,17 @@ import {
 import { Toaster } from "~/components/ui/sonner";
 import { LanguageProvider } from "~/context/LanguageContext";
 import { ThemeProvider } from "~/context/ThemeContext";
+
+// 메타 정보 설정 (기본값, 서버와 클라이언트가 일치해야 함)
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Easylog - Voice Memo Tool" },
+    {
+      name: "description",
+      content: "A tool that converts speech to text for easy note-taking.",
+    },
+  ];
+};
 
 // CSS 파일 경로를 직접 지정
 export const links: LinksFunction = () => [
@@ -25,61 +36,7 @@ export const links: LinksFunction = () => [
   },
 ];
 
-// 페이지 로드 전에 테마 설정을 적용하는 인라인 스크립트
-const themeInitializerScript = `
-  (function() {
-    function getThemePreference() {
-      let theme;
-      try {
-        theme = localStorage.getItem('theme');
-      } catch (error) {
-        return 'light';
-      }
-      if (theme === 'dark' || theme === 'light') {
-        return theme;
-      }
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-
-    const theme = getThemePreference();
-    const root = document.documentElement;
-    
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-  })();
-`;
-
-// 페이지 로드 전에 언어 설정을 적용하는 인라인 스크립트
-const languageInitializerScript = `
-  (function() {
-    function getLanguagePreference() {
-      let locale;
-      try {
-        locale = localStorage.getItem('app-locale');
-      } catch (error) {
-        return getBrowserLanguage();
-      }
-      if (locale === 'ko' || locale === 'en') {
-        return locale;
-      }
-      return getBrowserLanguage();
-    }
-
-    function getBrowserLanguage() {
-      const browserLang = navigator.language.split('-')[0];
-      return browserLang === 'ko' ? 'ko' : 'en';
-    }
-
-    const locale = getLanguagePreference();
-    const html = document.documentElement;
-    html.setAttribute('lang', locale);
-  })();
-`;
-
-// 아이콘 깜박임 방지를 위한 스타일
+// 아이콘 스타일 CSS
 const iconPreloadStyles = `
   .lucide {
     width: 1em;
@@ -92,52 +49,20 @@ const iconPreloadStyles = `
   }
 `;
 
-// 메타 정보 다국어 처리를 위한 스크립트
-const metaLocalizationScript = `
-  (function() {
-    try {
-      const locale = localStorage.getItem('app-locale') || 'ko';
-      const metaTitles = {
-        ko: 'Easylog - 음성 메모 도구',
-        en: 'Easylog - Voice Memo Tool'
-      };
-      const metaDescriptions = {
-        ko: '음성을 텍스트로 변환하여 메모를 쉽게 작성할 수 있는 도구입니다.',
-        en: 'A tool that converts speech to text for easy note-taking.'
-      };
-      
-      // 타이틀 업데이트
-      document.title = metaTitles[locale] || metaTitles.ko;
-      
-      // 메타 설명 업데이트
-      const metaDescription = document.querySelector('meta[name="description"]');
-      if (metaDescription) {
-        metaDescription.setAttribute('content', metaDescriptions[locale] || metaDescriptions.ko);
-      }
-    } catch (e) {
-      console.error('Error updating meta information:', e);
-    }
-  })();
-`;
-
-export function Layout({ children }: { children: React.ReactNode }) {
+// Document 컴포넌트 - HTML 구조를 정의
+// 하이드레이션 오류 방지를 위해 최소한의 구조로 유지
+function Document({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko" className="light">
+    <html lang="ko" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
         <style dangerouslySetInnerHTML={{ __html: iconPreloadStyles }} />
-        <script dangerouslySetInnerHTML={{ __html: themeInitializerScript }} />
-        <script
-          dangerouslySetInnerHTML={{ __html: languageInitializerScript }}
-        />
-        <script dangerouslySetInnerHTML={{ __html: metaLocalizationScript }} />
       </head>
-      <body className="bg-white dark:bg-gray-900 min-h-screen transition-colors duration-300">
+      <body className="min-h-screen" suppressHydrationWarning>
         {children}
-        <Toaster position="top-center" closeButton />
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -145,12 +70,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+// App 컴포넌트
 export default function App() {
   return (
-    <ThemeProvider>
-      <LanguageProvider>
-        <Outlet />
-      </LanguageProvider>
-    </ThemeProvider>
+    <Document>
+      <ThemeProvider>
+        <LanguageProvider>
+          <Outlet />
+          <Toaster position="top-center" closeButton />
+        </LanguageProvider>
+      </ThemeProvider>
+    </Document>
   );
 }

@@ -1,8 +1,15 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useLanguage } from "~/context/LanguageContext";
 
 export default function Footer() {
   const { t } = useLanguage();
+  const [mounted, setMounted] = useState(false);
+  const [year, setYear] = useState("2024"); // 기본값 설정
+
+  useEffect(() => {
+    setMounted(true);
+    setYear(new Date().getFullYear().toString());
+  }, []);
 
   return (
     <footer className="border-t py-6 mt-10 bg-gray-50 dark:bg-gray-900 dark:border-gray-800 transition-colors duration-300">
@@ -36,7 +43,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-8 pt-4 border-t border-gray-200 dark:border-gray-800 text-center text-sm text-gray-600 dark:text-gray-400">
-          © {new Date().getFullYear()} {t.copyright}
+          © {year} {t.copyright}
         </div>
       </div>
     </footer>

@@ -37,13 +37,21 @@ const getInitialTheme = (): Theme => {
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  // 초기 테마 설정 - 인라인 스크립트와 일관성을 위해 getInitialTheme 사용
-  const [theme, setTheme] = useState<Theme>(getInitialTheme);
+  // 항상 'light'로 시작하고 클라이언트 사이드에서 실제 테마로 업데이트
+  const [theme, setTheme] = useState<Theme>("light");
+  const [mounted, setMounted] = useState(false);
+
+  // 클라이언트 사이드에서만 실행
+  useEffect(() => {
+    setMounted(true);
+    // 실제 테마 설정 가져와서 상태 업데이트
+    setTheme(getInitialTheme());
+  }, []);
 
   // 테마 변경 시 로컬 스토리지에 저장하고 DOM 업데이트
   useEffect(() => {
-    // localStorage는 클라이언트 사이드에서만 사용 가능
-    if (typeof window === "undefined") return;
+    // 마운트 전이거나 SSR 환경이면 아무것도 하지 않음
+    if (!mounted || typeof window === "undefined") return;
 
     try {
       localStorage.setItem("theme", theme);
@@ -59,7 +67,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
     } else {
       root.classList.remove("dark");
     }
-  }, [theme]);
+  }, [theme, mounted]);
 
   // 테마 전환 함수
   const toggleTheme = () => {

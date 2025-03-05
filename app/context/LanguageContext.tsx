@@ -45,15 +45,22 @@ const getInitialLocale = (): SupportedLocale => {
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  // 초기 상태 설정
-  const [locale, setLocale] = useState<SupportedLocale>(getInitialLocale);
-  const [recognitionLang, setRecognitionLang] = useState<string>(
-    localeToRecognitionLang[getInitialLocale()]
-  );
+  // 서버 사이드 렌더링을 위해 항상 기본값으로 시작
+  const [locale, setLocale] = useState<SupportedLocale>("ko");
+  const [recognitionLang, setRecognitionLang] = useState<string>("ko-KR");
+  const [mounted, setMounted] = useState(false);
+
+  // 클라이언트 사이드에서만 실행되는 초기화
+  useEffect(() => {
+    setMounted(true);
+    const initialLocale = getInitialLocale();
+    setLocale(initialLocale);
+    setRecognitionLang(localeToRecognitionLang[initialLocale]);
+  }, []);
 
   // 언어 변경 시 로컬 스토리지에 저장
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (!mounted || typeof window === "undefined") return;
 
     try {
       localStorage.setItem("app-locale", locale);
@@ -63,7 +70,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch (err) {
       console.error("Could not save locale to localStorage:", err);
     }
-  }, [locale]);
+  }, [locale, mounted]);
 
   // 음성 인식 언어 변경 시 UI 언어도 함께 변경
   const handleRecognitionLangChange = (lang: string) => {

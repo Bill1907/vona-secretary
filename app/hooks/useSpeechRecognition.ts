@@ -7,7 +7,7 @@ import {
   requestMicrophoneAccess,
 } from "../utils/audioUtils";
 
-// 외부 WS 서버 주소
+// 외부 WS 서버 주소 (기본값으로 직접 설정)
 const WS_SERVER_URL = "https://easylog-server-307101842878.us-central1.run.app";
 
 // 인식 결과 타입
